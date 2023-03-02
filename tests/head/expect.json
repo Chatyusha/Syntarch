@@ -1,0 +1,20 @@
+[
+  {
+    "type": "Head", "level": 1, "contents": ["Part"]
+  },
+  {
+    "type": "Head", "level": 2, "contents": ["Section"]
+  },
+  {
+    "type": "Head", "level": 3, "contents": ["SubSection"]
+  },
+  {
+    "type": "Head", "level": 4, "contents": ["SubSubSection"]
+  },
+  {
+    "type": "Head", "level": 5, "contents": ["Paragraph"]
+  },
+  {
+    "type": "Head", "level": 6, "contents": ["SubParagraph"]
+  }
+]

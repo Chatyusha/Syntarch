@@ -28,5 +28,5 @@ class Inlinemath(Text):
 class Annotation(Text):
     def __init__(self):
         self.type = "Annotation"
-        self.numbed = 0
+        self.number = 0
 
