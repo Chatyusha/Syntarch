@@ -1,53 +1,71 @@
-from .tokens.headlines import Head
-from .tokens.texts import Plaintext, Boldtext, Italictext, Inlinecode, Inlinemath
-from .tokens.codeblock import Codeblock
+from typing import Union
+from typing import Any
+from .token import Token
+from .marker import Marker
+from pathlib import Path
 
-from .matchers import Matchers
+from sucellus import token
 
-class Parser():
-    def __init__(self,match_marker = None, builder = None):
-        if not match_marker:
-            self.__matches = Matchers()
-        self.syntax_tree = [] 
+class Parser(object):
+    read_text: str
+    converted_text: list[str] = []
+    pre_syntax_tree: list[Token] = []
+    marker: Union[Marker, Any]
+    tmp_syntax: str
 
-    def readFile(self,path):
-        with open(path) as textfile:
-            self.__rawtext_iter = iter(textfile.read().split("\n")[:-1])
-
-    def parse(self):
-        for line in self.__rawtext_iter:
-            if self.__matches.MATCH_CODEBLOCK.match(line):
-                self.syntax_tree.append(self.build_codeblock(line))
-            elif self.__matches.MATCH_HEAD.match(line):
-                self.syntax_tree.append(self.build_head(line))
-            else:
-                pass
-
-                    
-
-    def build_head(self,line):
-        head = Head()
-        match = self.__matches.MATCH_HEAD.match(line)
-        head.contents = [line[match.end():]]
-        head.level = len(match.group())-1
-        return head
-
-    def build_codeblock(self,line):
-        codeblock = Codeblock()
-        print(vars(codeblock))
-        codeblock.language = line[3:]
-        next(self.__rawtext_iter) # 1行進む
-        for code in self.__rawtext_iter:
-            if self.__matches.MATCH_CODEBLOCK.match(code):
-                break
-            else:
-                codeblock.contents.append(code)
-        return codeblock
+    def __init__(self,marker = None):
+        if marker:
+            self.marker = marker
+        else:
+            self.marker = Marker()
     
-    def build_text(self,line):
-        line_iter = iter(line)
-        for character in line_iter:
-            pass
+    def read_file(self,file_path: str):
+       self.read_text = Path(file_path).open().read()
 
-    def text_analyze(self,line):
-        pass
+    def convert_to_list(self):
+        self.converted_text = self.read_text.split("\n")
+    
+    def pre_process(self):
+        if self.converted_text[-1] != "":
+            self.converted_text.append(r"")
+        while self.converted_text:
+            self.tmp_syntax = self.converted_text.pop(0)
+            if self.marker.HEAD.match(self.tmp_syntax):
+                token = Token()
+                token.type = "head"
+                token.contents = self.tmp_syntax
+                self.pre_syntax_tree.append(token)
+            elif self.marker.START_CODE_BLOCK.match(self.tmp_syntax):
+                token = self.build_codeblock()
+                self.pre_syntax_tree.append(token)
+            elif self.marker.START_QUOTE_BLOCK.match(self.tmp_syntax):
+                token = self.build_quote_block()
+                self.pre_syntax_tree.append(token)
+            else:
+                token = Token()
+                token.type = "paragraph"
+                self.pre_syntax_tree.append(token)
+        return self.pre_syntax_tree
+
+    def build_codeblock(self):
+        token = Token()
+        token.type = "code_block"
+        raw_contents : list[str] = []
+        while not self.marker.END_CODE_BLOCK.match(self.tmp_syntax):
+            raw_contents.append(self.tmp_syntax)
+            self.tmp_syntax = self.converted_text.pop(0)
+        else:
+            raw_contents.append(self.tmp_syntax)
+        token.contents = "\n".join(raw_contents)
+        return token
+
+    def build_quote_block(self):
+        token = Token()
+        token.type = "quote_block"
+        raw_contents: list[str] = []
+        while not self.marker.END_QUOTE_BLOCK.match(self.tmp_syntax):
+            raw_contents.append(self.tmp_syntax)
+            self.tmp_syntax = self.converted_text.pop(0)
+        else:
+            token.contents = "\n".join(raw_contents)
+        return token

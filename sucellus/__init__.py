@@ -1,1 +1,2 @@
-import parser
+import imp
+from . import parser
