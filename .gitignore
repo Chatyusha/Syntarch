@@ -1,3 +1,4 @@
 sucellus/__pycache__/
 .env/
+.menv/
 test/
