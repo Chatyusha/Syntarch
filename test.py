@@ -9,7 +9,7 @@ class ParserTest(unittest.TestCase):
 
 if __name__ == "__main__":
     parser = Parser()
-    file = "./tests/codeblock.md"
+    file = "./tests/table.md"
     parser.read_file(file)
     parser.convert_to_list()
     parser.pre_process()

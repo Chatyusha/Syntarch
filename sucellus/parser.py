@@ -31,9 +31,7 @@ class Parser(object):
         while self.converted_text:
             self.tmp_syntax = self.converted_text.pop(0)
             if self.marker.HEAD.match(self.tmp_syntax):
-                token = Token()
-                token.type = "head"
-                token.contents = self.tmp_syntax
+                token = self.build_head()
                 self.pre_syntax_tree.append(token)
             elif self.marker.START_CODE_BLOCK.match(self.tmp_syntax):
                 token = self.build_codeblock()
@@ -41,12 +39,20 @@ class Parser(object):
             elif self.marker.START_QUOTE_BLOCK.match(self.tmp_syntax):
                 token = self.build_quote_block()
                 self.pre_syntax_tree.append(token)
+            elif self.marker.START_TABLE.match(self.tmp_syntax):
+                token = self.build_table()
+                self.pre_syntax_tree.append(token)
             else:
-                token = Token()
-                token.type = "paragraph"
+                token = self.build_paragraph()
                 self.pre_syntax_tree.append(token)
         return self.pre_syntax_tree
 
+    def build_head(self):
+        token = Token()
+        token.type = "head"
+        token.contents = self.tmp_syntax
+        return token
+    
     def build_codeblock(self):
         token = Token()
         token.type = "code_block"
@@ -56,7 +62,7 @@ class Parser(object):
             self.tmp_syntax = self.converted_text.pop(0)
         else:
             raw_contents.append(self.tmp_syntax)
-        token.contents = "\n".join(raw_contents)
+            token.contents = "\n".join(raw_contents)
         return token
 
     def build_quote_block(self):
@@ -68,4 +74,28 @@ class Parser(object):
             self.tmp_syntax = self.converted_text.pop(0)
         else:
             token.contents = "\n".join(raw_contents)
+        return token
+    
+    def build_table(self):
+        token = Token()
+        head_token = Token()
+        position_token = Token()
+        row_token = Token()
+        token.type = "table"
+        head_token.contents = self.tmp_syntax
+        self.tmp_syntax = self.converted_text.pop(0)
+        position_token.contents = self.tmp_syntax
+        self.tmp_syntax =  self.converted_text.pop(0)
+        raw_contents : list[str] = []
+        while not self.marker.END_TABLE.match(self.tmp_syntax):
+            raw_contents.append(self.tmp_syntax)
+            self.tmp_syntax = self.converted_text.pop(0)
+        else:
+            row_token.contents = "\n".join(raw_contents)
+        token.children += [head_token, position_token, row_token]
+        return token
+        
+    def build_paragraph(self):
+        token = Token()
+        token.type = "paragraph"
         return token
