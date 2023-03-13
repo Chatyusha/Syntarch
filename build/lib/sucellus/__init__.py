@@ -1,1 +1,2 @@
-from sucellus import *
+import imp
+from . import parser

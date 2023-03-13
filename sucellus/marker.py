@@ -1,16 +1,20 @@
 import re
-class Marker():        
+class Marker():
+    # Markers
     START_CODE_BLOCK = re.compile(r"^```")
     END_CODE_BLOCK = re.compile(r"```$")
     START_QUOTE_BLOCK = re.compile(r"^> ")
     END_QUOTE_BLOCK = re.compile(r"^$")
     START_TABLE = re.compile(r"(\|.*)+\|$")
     END_TABLE = re.compile(r"^$")
+    END_PARAGRAPH = re.compile(r"^$")
     HEAD = re.compile(r"^#{1,6} ")
-    ESCAPE = re.compile(r"^\\")
-    START_BOLD = re.compile(r"^\*\*")
-    START_ITARIC = re.compile(r"^\*")
 
-
+    # MatchPatterns
+    EMPHASIS = r"\*([^*]+?)\*"
+    ITALIC = r"\*\*([^*]+?)\*\*"
+    INLINE = r"\`([^`]+?)\`"
+    PLAINE = r"([^*`]+)"
+    CONTEXT = re.compile(rf"{EMPHASIS}|{ITALIC}|{INLINE}|{PLAINE}")
     def __init__(self) -> None:
         pass

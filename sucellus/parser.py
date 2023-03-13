@@ -1,10 +1,14 @@
+import re
 from typing import Union
 from typing import Any
 from .token import Token
 from .marker import Marker
 from pathlib import Path
 
+
 from sucellus import token
+
+from sucellus import marker
 
 class Parser(object):
     read_text: str
@@ -78,24 +82,49 @@ class Parser(object):
     
     def build_table(self):
         token = Token()
-        head_token = Token()
-        position_token = Token()
-        row_token = Token()
         token.type = "table"
-        head_token.contents = self.tmp_syntax
-        self.tmp_syntax = self.converted_text.pop(0)
-        position_token.contents = self.tmp_syntax
-        self.tmp_syntax =  self.converted_text.pop(0)
-        raw_contents : list[str] = []
+        raw_contents: list[str] = []
         while not self.marker.END_TABLE.match(self.tmp_syntax):
             raw_contents.append(self.tmp_syntax)
-            self.tmp_syntax = self.converted_text.pop(0)
         else:
-            row_token.contents = "\n".join(raw_contents)
-        token.children += [head_token, position_token, row_token]
+            token.contents = "\n".join(raw_contents)
         return token
         
     def build_paragraph(self):
         token = Token()
         token.type = "paragraph"
+        raw_contents : list[str] = []
+        while not self.marker.END_PARAGRAPH.match(self.tmp_syntax):
+            raw_contents.append(self.tmp_syntax)
+            self.tmp_syntax = self.converted_text.pop(0)
+        else:
+            token.contents = "\n".join(raw_contents)
         return token
+    
+    def build_context(self, context):
+        match_iter = self.marker.CONTEXT.finditer(context)
+        syntax_tree : list[Token] = []
+        for match in match_iter:
+            match_text = match.group()
+            if part:=re.match(self.marker.EMPHASIS,match_text):
+                token = Token()
+                token.type = "emphasis"
+                token.contents = part.group(1)
+                syntax_tree.append(part)
+            elif part:=re.match(self.marker.ITALIC,match_text):
+                token = Token()
+                token.type = "italic"
+                token.contents = part.group(1)
+                syntax_tree.append(part)
+            elif part:=re.match(self.marker.INLINE,match_text):
+                token = Token()
+                token.type = "inline"
+                token.contents = part.group(1)
+                syntax_tree.append(part)
+            elif part:=re.match(self.marker.PLAINE,match_text):
+                token = Token()
+                token.type = "plain"
+                token.contents = part.group(1)
+                syntax_tree.append(part)
+        
+        return syntax_tree

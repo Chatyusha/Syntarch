@@ -5,7 +5,18 @@ class Token():
             """
             propaties
             ----------
-            - type: type of context, eg.) headline, paragraph, block
+            - type: type of context.
+                - head : 
+                - codeblock : 
+                - quoteblock : 
+                - paragraph : 
+                - table
+                    - table-head
+                    - table-posision
+                    - table-row
+                - list
+                - enumlist
+            ----------
             """
         )
 
