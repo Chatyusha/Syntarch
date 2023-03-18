@@ -1,17 +1,25 @@
 import re
-class Marker():        
-    START_CODE_BLOCK = re.compile(r"^```")
-    END_CODE_BLOCK = re.compile(r"```$")
-    START_QUOTE_BLOCK = re.compile(r"^> ")
-    END_QUOTE_BLOCK = re.compile(r"^$")
-    START_TABLE = re.compile(r"(\|.*)+\|$")
-    END_TABLE = re.compile(r"^$")
-    END_PARAGRAPH = re.compile(r"^$")
-    HEAD = re.compile(r"^#{1,6} ")
-    ESCAPE = re.compile(r"^\\")
-    START_BOLD = re.compile(r"^\*\*")
-    START_ITARIC = re.compile(r"^\*")
+class Marker(object):
+    # Markers
+    CODE_BLOCK = r"^```[^`]+?```$"
+    QUOTE_BLOCK = r"^(>(( [^>]*?)|)\n)*?> [^>]*?$"
+    MATH_BLOCK = r"^\$\$[^$]+?\$\$$"
 
+    HEAD = r"^#{1,6} [^#]+?$"
 
-    def __init__(self) -> None:
-        pass
+    # MatchPatterns
+    EMPHASIS = r"\*(((\\\*)|[^*])+?)\*"
+    ITALIC = r"\*\*(((\\\*)|[^*])+?)\*\*"
+    INLINE = r"`(((\\`)|[^`])+?)`"
+    INLINE_MATH = r"\$(((\\\$)|[^$])+?)\$"
+    PLAINE = r"(([^*`]|(\\\*)|(\`))+)"
+    CONTEXT = rf"{EMPHASIS}|{ITALIC}|{INLINE}|{INLINE_MATH}|{PLAINE}"
+
+    ## Table
+    TABLE_LEFT = r"(:-+)"
+    TABLE_CENTER = r"(:-+:)"
+    TABLE_RIGHT = r"(-+:)"
+    TABLE_POSITION = rf"((\|({TABLE_LEFT}|{TABLE_CENTER}|{TABLE_RIGHT}))+)\|"
+    TABLE_CELL = r"([^|]+)"
+    TABLE_ROW = rf"((\|{TABLE_CELL})+)\|"
+    TABLE = rf"^{TABLE_ROW}\n{TABLE_POSITION}\n({TABLE_ROW}\n)*({TABLE_ROW})$"

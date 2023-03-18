@@ -14,5 +14,5 @@ if __name__ == "__main__":
     # parser.convert_to_list()
     # parser.pre_process()
     # print(parser.pre_syntax_tree)
-    a = parser.build_context("**hoge***fuga*`bar`hogehoge")
+    a = parser.build_context("**hoge\*fuga***\**")
     exit(0)

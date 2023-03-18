@@ -1,14 +1,11 @@
 import re
 from typing import Union
 from typing import Any
+
+from .table import Table
 from .token import Token
 from .marker import Marker
 from pathlib import Path
-
-
-from sucellus import token
-
-from sucellus import marker
 
 class Parser(object):
     read_text: str
@@ -27,37 +24,35 @@ class Parser(object):
        self.read_text = Path(file_path).open().read()
 
     def convert_to_list(self):
-        self.converted_text = self.read_text.split("\n")
+        self.converted_text = self.read_text.split("\n\n")
     
     def pre_process(self):
-        if self.converted_text[-1] != "":
-            self.converted_text.append(r"")
         while self.converted_text:
             self.tmp_syntax = self.converted_text.pop(0)
             if self.marker.HEAD.match(self.tmp_syntax):
-                token = self.build_head()
+                token = self.prebuild_head()
                 self.pre_syntax_tree.append(token)
             elif self.marker.START_CODE_BLOCK.match(self.tmp_syntax):
-                token = self.build_codeblock()
+                token = self.prebuild_codeblock()
                 self.pre_syntax_tree.append(token)
             elif self.marker.START_QUOTE_BLOCK.match(self.tmp_syntax):
-                token = self.build_quote_block()
+                token = self.prebuild_quote_block()
                 self.pre_syntax_tree.append(token)
             elif self.marker.START_TABLE.match(self.tmp_syntax):
-                token = self.build_table()
+                token = self.prebuild_table()
                 self.pre_syntax_tree.append(token)
             else:
                 token = self.build_paragraph()
                 self.pre_syntax_tree.append(token)
         return self.pre_syntax_tree
 
-    def build_head(self):
+    def prebuild_head(self):
         token = Token()
         token.type = "head"
         token.contents = self.tmp_syntax
         return token
     
-    def build_codeblock(self):
+    def prebuild_codeblock(self):
         token = Token()
         token.type = "code_block"
         raw_contents : list[str] = []
@@ -69,7 +64,7 @@ class Parser(object):
             token.contents = "\n".join(raw_contents)
         return token
 
-    def build_quote_block(self):
+    def prebuild_quote_block(self):
         token = Token()
         token.type = "quote_block"
         raw_contents: list[str] = []
@@ -80,7 +75,7 @@ class Parser(object):
             token.contents = "\n".join(raw_contents)
         return token
     
-    def build_table(self):
+    def prebuild_table(self):
         token = Token()
         token.type = "table"
         raw_contents: list[str] = []
@@ -90,7 +85,7 @@ class Parser(object):
             token.contents = "\n".join(raw_contents)
         return token
         
-    def build_paragraph(self):
+    def prebuild_paragraph(self):
         token = Token()
         token.type = "paragraph"
         raw_contents : list[str] = []
@@ -110,21 +105,39 @@ class Parser(object):
                 token = Token()
                 token.type = "emphasis"
                 token.contents = part.group(1)
-                syntax_tree.append(part)
+                syntax_tree.append(token)
             elif part:=re.match(self.marker.ITALIC,match_text):
                 token = Token()
                 token.type = "italic"
                 token.contents = part.group(1)
-                syntax_tree.append(part)
+                syntax_tree.append(token)
             elif part:=re.match(self.marker.INLINE,match_text):
                 token = Token()
                 token.type = "inline"
                 token.contents = part.group(1)
-                syntax_tree.append(part)
+                syntax_tree.append(token)
             elif part:=re.match(self.marker.PLAINE,match_text):
                 token = Token()
                 token.type = "plain"
                 token.contents = part.group(1)
-                syntax_tree.append(part)
+                syntax_tree.append(token)
         
         return syntax_tree
+
+    def build_table(self,context : str):
+        rows = context.split("\n")
+        table = Table()
+        table.header = [self.build_context(head) for head in filter(None, rows.pop(0).split("|"))]
+        for pos in filter(None, rows.pop(0).split("|")):
+            if self.marker.TABLE_LEFT.match(pos):
+                table.position.append("left")
+            elif self.marker.TABLLE_CENTER.match(pos):
+                table.position.append("center")
+            elif self.marker.TABLE_RIGHT.match(pos):
+                table.position.append("right")
+        
+        for row in rows:
+            table.cells.append([self.build_context(cell) for cell in filter(None, row.split("|"))])
+        
+        return table
+        pass
