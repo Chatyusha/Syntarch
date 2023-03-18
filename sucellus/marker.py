@@ -1,9 +1,10 @@
 import re
 class Marker(object):
     # Markers
-    CODE_BLOCK = r"^```[^`]+?```$"
+    START_CODE_BLOCK = r"^```[^`]+$"
+    END_CODE_BLOCK = r"^[^`]+```$"
     QUOTE_BLOCK = r"^(>(( [^>]*?)|)\n)*?> [^>]*?$"
-    MATH_BLOCK = r"^\$\$[^$]+?\$\$$"
+    DISPLAY_MATH = r"^\$\$[^$]+?\$\$$"
 
     HEAD = r"^#{1,6} [^#]+?$"
 
@@ -25,9 +26,10 @@ class Marker(object):
     TABLE = rf"^{TABLE_ROW}\n{TABLE_POSITION}\n({TABLE_ROW}\n)*({TABLE_ROW})$"
 
     RE_HEAD = re.compile(HEAD)
-    RE_CODE_BLOCK = re.compile(CODE_BLOCK)
+    RE_START_CODE_BLOCK = re.compile(START_CODE_BLOCK)
+    RE_END_CODE_BLOCK = re.compile(END_CODE_BLOCK)
     RE_QUOTE_BLOCK = re.compile(QUOTE_BLOCK)
-    RE_MATH_BLOCK = re.compile(MATH_BLOCK)
+    RE_DISPLAY_MATH = re.compile(DISPLAY_MATH)
     RE_TABLE = re.compile(TABLE)
     RE_CONTEXT = re.compile(CONTEXT)
 

@@ -1,7 +1,10 @@
 class TokenTypes():
     TYPE_HEAD = "head"
     TYPE_CODE_BLOCK = "codeb_lock"
-    TYPE_QUOTEBLOCK = "quote_block"
+    TYPE_QUOTE_BLOCK = "quote_block"
+    TYPE_TABLE = "table"
+    TYPE_PARAGRAPH = "paragraph"
+    TYPE_DISPLAY_MATH = "display_math"
     TYPE_PLAIN = "plain"
     TYPE_EMPHASIS = "emphasis"
     TYPE_ITALIC = "italic"
