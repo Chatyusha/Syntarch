@@ -23,6 +23,30 @@ class Token():
     def __init__(self):
         self.type: str
         self.contents: str
-        self.children: list[Token] = []
-        self.level: int
-        self.inline: str
+        self.children = []
+
+class Head(Token):
+    level:int
+    def __init__(self):
+        super().__init__()
+
+class CodeBlock(Token):
+    language : str
+    def __init__(self):
+        super().__init__()
+
+class Paragraph(Token):
+    def __init__(self):
+        super().__init__()
+
+class Table(Token):
+    header: list[Token] = []
+    position: list[str] = []
+    cells: list[list[list[Token]]] = []
+
+    def __init__(self):
+        super().__init__()
+
+class Text(Token):
+    def __init__(self):
+        super().__init__()

@@ -2,13 +2,20 @@ import re
 from typing import Union
 from typing import Any
 
-from .table import Table
+from .token import Paragraph, Table
 from .token import Token
+from .token import Head
+from .token import CodeBlock
+from .token import Text
 from .marker import Marker
 from .types import TokenTypes
 from pathlib import Path
 
 from sucellus import types
+
+from sucellus import codeblock
+
+from sucellus import token
 
 class Parser(object):
     read_text: str
@@ -42,8 +49,8 @@ class Parser(object):
             elif self.marker.RE_START_CODE_BLOCK.search(block):
                 token.type = self.types.TYPE_CODE_BLOCK
                 while not self.marker.RE_END_CODE_BLOCK.search(block):
-                    block = self.converted_text.pop(0)
                     _contents.append(block)
+                    block = self.converted_text.pop(0)
                 else:
                     _contents.append(block)
             elif self.marker.RE_QUOTE_BLOCK.search(block):
@@ -58,48 +65,48 @@ class Parser(object):
             else:
                 token.type = self.types.TYPE_PARAGRAPH
                 _contents.append(block)
-            self.pre_syntax_tree.append("\n\n".join(_contents))
+            token.contents = "\n\n".join(_contents)
+            self.pre_syntax_tree.append(token)
         return self.pre_syntax_tree
 
-    # def prebuild_head(self):
-    #     token = Token()
-    #     token.type = "head"
-    #     token.contents = self.tmp_syntax
-    #     return token
+    def build_head(self, contents):
+        token = Head()
+        token.type = self.types.TYPE_HEAD
+        token.level = len(self.marker.RE_HEAD_LEVEL.search(contents).group())
+        token.children = [contents[token.level+1:]]
+        return token
     
-    # def prebuild_codeblock(self):
-    #     token = Token()
-    #     token.type = "code_block"
-    #     raw_contents : list[str] = []
-    #     while not self.marker.END_CODE_BLOCK.match(self.tmp_syntax):
-    #         raw_contents.append(self.tmp_syntax)
-    #         self.tmp_syntax = self.converted_text.pop(0)
-    #     else:
-    #         raw_contents.append(self.tmp_syntax)
-    #         token.contents = "\n".join(raw_contents)
-    #     return token
+    def build_code_block(self,contents: str):
+        token = CodeBlock()
+        listed_contents = contents.split("\n")
+        token.language = listed_contents.pop(0)[3:]
+        listed_contents.pop(-1)
+        token.children = listed_contents
+        return token
+    
+    def build_paragraph(self,contents):
+        paragraph = Paragraph()
+        paragraph.type = self.types.TYPE_PARAGRAPH
+        match_iter = self.marker.RE_CONTEXT.finditer(contents)
+        for match in match_iter:
+            match_text = match.group()
+            token = Text()
+            if part:=self.marker.RE_NEW_LINE.match(match_text):
+                token.type = self.types.TYPE_NEW_LINE
+            elif part:=self.marker.RE_EMPHASIS.match(match_text):
+                token.type = self.types.TYPE_EMPHASIS
+            elif part:=self.marker.RE_ITALIC.match(match_text):
+                token.type = self.types.TYPE_ITALIC
+            elif part:=self.marker.RE_INLINE.match(match_text):
+                token.type = self.types.TYPE_INLINE
+            elif part:=self.marker.RE_INLINE_MATH.match(match_text):
+                token.type = self.types.TYPE_INLINE_MATH
+            elif part:=self.marker.RE_PLAINE.match(match_text):
+                token.type = self.types.TYPE_PLAINE
+            token.contents = part.group(1)
+            paragraph.children.append(token)
+        return paragraph
 
-    # def prebuild_quote_block(self):
-    #     token = Token()
-    #     token.type = "quote_block"
-    #     raw_contents: list[str] = []
-    #     while not self.marker.END_QUOTE_BLOCK.match(self.tmp_syntax):
-    #         raw_contents.append(self.tmp_syntax)
-    #         self.tmp_syntax = self.converted_text.pop(0)
-    #     else:
-    #         token.contents = "\n".join(raw_contents)
-    #     return token
-    
-    # def prebuild_table(self):
-    #     token = Token()
-    #     token.type = "table"
-    #     raw_contents: list[str] = []
-    #     while not self.marker.END_TABLE.match(self.tmp_syntax):
-    #         raw_contents.append(self.tmp_syntax)
-    #     else:
-    #         token.contents = "\n".join(raw_contents)
-    #     return token
-        
     # def prebuild_paragraph(self):
     #     token = Token()
     #     token.type = "paragraph"
