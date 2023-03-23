@@ -14,6 +14,15 @@ class TokenTypes():
     TYPE_NEW_LINE = "new_line"
     TYPE_PHRASE = "phrase"
 
+    TYPE_TABLE_ROW = "table_row"
+    TYPE_TABLE_CELL = "table_cell"
+    TYPE_TABLE_POSITIONS = "table_positions"
+    TYPE_TABLE_POSITION = "table_position"
     TABLE_POSITION_LEFT = "table_left"
     TABLE_POSITION_CENTER = "table_center"
     TABLE_POSITION_RIGHT = "table_right"
+
+class TokenValues():
+    CONST_TABLE_POSITION_LEFT = "left"
+    CONST_TABLE_POSITION_CENTER = "center"
+    CONST_TABLE_POSITION_RIGHT = "right"

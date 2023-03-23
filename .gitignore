@@ -1,4 +1,7 @@
-sucellus/__pycache__/
+syntach/__pycache__/
 .env/
 .menv/
 test/
+.vscode/
+build/
+ast.json

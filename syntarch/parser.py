@@ -1,15 +1,10 @@
-from nis import match
-import types
 from typing import Union
 from typing import Any
 
-from .token import DotList, Paragraph, Phrase, QuoteBlock, Table
+from .token import DotList
 from .token import Token
-from .token import Head
-from .token import CodeBlock
-from .token import Text
 from .marker import Marker
-from .types import TokenTypes
+from .types import TokenTypes, TokenValues
 from pathlib import Path
 
 
@@ -30,10 +25,11 @@ class Parser(object):
             self.types = types
         else:
             self.types = TokenTypes()
+            self.values = TokenValues()
     
     def read_file(self,file_path: str):
-       self.read_text = Path(file_path).open().read()
-       self.converted_text = self.read_text.split("\n\n")
+        self.read_text = Path(file_path).read_text()
+        self.converted_text = self.read_text.split("\n\n")
         
     def pre_process(self):
         while self.converted_text:
@@ -69,7 +65,7 @@ class Parser(object):
             self.pre_syntax_tree.append(token)
 
     def build_head(self, contents):
-        token = Head()
+        token = Token()
         token.type = self.types.TYPE_HEAD
         # "#"のベタ打ちはそのうち直す
         # より抽象度の高いコードに変更(そのうち)
@@ -78,32 +74,33 @@ class Parser(object):
         return token
     
     def build_code_block(self,contents: str):
-        token = CodeBlock()
+        token = Token()
         token.type = self.types.TYPE_CODE_BLOCK
         _contents = list(filter(None,self.marker.RE_CODE_BLOCK_MARK.sub("",contents).split("\n")))
         token.language = _contents.pop(0)
-        token.contents = "\n".join(contents)
+        token.contents = "\n".join(_contents)
         return token
     
     def build_quote_block(self,contents : str):
-        token = QuoteBlock()
+        token = Token()
         token.type = self.types.TYPE_QUOTE_BLOCK
         _contents = self.marker.RE_QUOTE_LINE.sub("",contents)
         token.children = self.build_context(_contents)
+        return token
 
     
     def build_paragraph(self,contents):
-        paragraph = Paragraph()
+        paragraph = Token()
         paragraph.type = self.types.TYPE_PARAGRAPH
         paragraph.children =  self.build_context(contents)
         return paragraph
 
     def build_context(self,contents):
         match_iter = self.marker.RE_CONTEXT.finditer(contents)
-        syntax :list[Text] = []
+        syntax :list[Token] = []
         for match in match_iter:
             match_text = match.group()
-            token = Text()
+            token = Token()
             if part:=self.marker.RE_NEW_LINE.match(match_text):
                 token.type = self.types.TYPE_NEW_LINE
             elif part:=self.marker.RE_EMPHASIS.match(match_text):
@@ -121,22 +118,44 @@ class Parser(object):
         return syntax
     
     def build_table(self,contents : str):
-        table = Table()
-        contents_matrix = [list(filter(None, row.split("|"))) for row in contents.split("\n")]
+        table = Token()
         table.type = self.types.TYPE_TABLE
-        table.header = [self.build_context(phrase) for phrase in contents_matrix.pop(0)]
-        for pos in contents_matrix.pop(0):
-            if self.marker.RE_TABLE_POSITION_LEFT.match(pos):
-                table.position.append(self.types.TABLE_POSITION_LEFT)
-            elif self.marker.RE_TABLE_POSITION_CENTER.match(pos):
-                table.position.append(self.types.TABLE_POSITION_CENTER)
-            elif self.marker.RE_TABLE_POSITION_RIGHT.match(pos):
-                table.position.append(self.types.TABLE_POSITION_RIGHT)
-        table.cells = [[self.build_context(cell) for cell in row] for row in contents_matrix]
+        contents_matrix = [list(filter(None, row.split("|"))) for row in contents.split("\n")]
+        table.children.append(self.build_table_row(contents_matrix.pop(0)))
+        table.children.append(self.build_table_position(contents_matrix.pop(0)))
+        for row in contents_matrix:
+            table.children.append(self.build_table_row(row))
         return table
+    
+    def build_table_row(self,row : list[str]):
+        token = Token()
+        token.type = self.types.TYPE_TABLE_ROW
+        for cell in row:
+            _cell = Token()
+            _cell.type = self.types.TYPE_TABLE_CELL
+            _cell.children = self.build_context(cell)
+            token.children.append(_cell)
+        return token
+    
+    def build_table_position(self,positions : list[str]):
+        token = Token()
+        token.type = self.types.TYPE_TABLE_POSITIONS
+        for pos in positions:
+            _pos = Token()
+            _pos.type = self.types.TYPE_TABLE_POSITION
+            if self.marker.RE_TABLE_POSITION_LEFT.match(pos):
+                _pos.contents = self.values.CONST_TABLE_POSITION_LEFT
+            elif self.marker.RE_TABLE_POSITION_CENTER.match(pos):
+                _pos.contents = self.values.CONST_TABLE_POSITION_CENTER
+            elif self.marker.RE_TABLE_POSITION_RIGHT.match(pos):
+                _pos.contents = self.values.CONST_TABLE_POSITION_RIGHT
+            token.children.append(_pos)
+        return token
     
     def build_list(self,contents : str):
         root = DotList() # rootのlevelは0
+        token = Token()
+        token.type = self.types.TYPE_DOT_LIST
         current_parent = root
         current_level = 0
         latest = root
@@ -160,8 +179,8 @@ class Parser(object):
                 node.parent = current_parent
                 current_parent.items.append(node)
                 latest = node
-        root.children = root.items
-        return root
+        token.children = root.items
+        return token
 
     def build_markdown(self):
         self.pre_process()

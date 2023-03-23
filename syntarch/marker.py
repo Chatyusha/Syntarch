@@ -10,7 +10,7 @@ class Marker(object):
     DOT_LIST = r"^( {4}|\t)*\* .*$"
 
     # MatchPatterns
-    NEW_LINE = r"(\n)"
+    NEW_LINE = r"^(\n)$"
     ITALIC = r"\*(((\\\*)|[^*])+?)\*"
     EMPHASIS = r"\*\*(((\\\*)|[^*])+?)\*\*"
     INLINE = r"`(((\\`)|[^`])+?)`"
