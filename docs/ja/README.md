@@ -7,5 +7,7 @@ Markdownで書かれたファイルを構文木に変換するPythonモジュー
 ### インストール方法
 
 ```sh
-
+git clone https://github.com/Chatyusha/Syntarch.git
+cd Syntarch
+pip3 install .
 ```
