@@ -5,24 +5,26 @@ from .types import TokenTypes
 
 class Token():
     def toJSON(self):
-        if self.children:
-            return {
+        return {
                 "type" : self.type,
-                "children":[i.toJSON() for i in self.children]
+                "level": self.level,
+                "contents":self.contents,
+                "children":[i.toJSON() for i in self.children],
+                "items":[i.toJSON() for i in self.items]
                 }
-        else:
-            if self.type == TokenTypes.TYPE_HEAD:
-                return {"type" : self.type, "level" : self.level, "contents" : self.contents}
-            else:
-                return {"type" : self.type, "contents" : self.contents}
+        # if self.children:
+        #     return {
+        #         "type" : self.type,
+        #         "children":[i.toJSON() for i in self.children]
+        #         }
+        # else:
+        #     if self.type == TokenTypes.TYPE_HEAD:
+        #         return {"type" : self.type, "level" : self.level, "contents" : self.contents}
+        #     else:
+        #         return {"type" : self.type, "contents" : self.contents}
     def __init__(self):
         self.type: str = ""
-        self.level: int = 0
-        self.contents : str = ""
-        self.children = []
-
-class DotList(Token):
-    parent : Any
-    items  = []
-    def __init__(self):
-        super().__init__()
+        self.level: int = None
+        self.contents : str = None
+        self.children : list[Token] = []
+        self.items : list[Token] = []

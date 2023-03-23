@@ -5,3 +5,4 @@ test/
 .vscode/
 build/
 ast.json
+syntarch.egg-info/

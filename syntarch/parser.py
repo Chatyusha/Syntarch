@@ -1,7 +1,6 @@
 from typing import Union
 from typing import Any
 
-from .token import DotList
 from .token import Token
 from .marker import Marker
 from .types import TokenTypes, TokenValues
@@ -153,14 +152,14 @@ class Parser(object):
         return token
     
     def build_list(self,contents : str):
-        root = DotList() # rootのlevelは0
+        root = Token() # rootのlevelは0
         token = Token()
         token.type = self.types.TYPE_DOT_LIST
         current_parent = root
         current_level = 0
         latest = root
         for value in contents.split("\n"):
-            node = DotList()
+            node = Token()
             level = 1
             while self.marker.RE_DOT_LIST_INDENT.match(value):
                 value = self.marker.RE_DOT_LIST_INDENT.sub("",value)
