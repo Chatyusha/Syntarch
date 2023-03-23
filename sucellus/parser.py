@@ -1,8 +1,9 @@
-import re
+from nis import match
+import types
 from typing import Union
 from typing import Any
 
-from .token import Paragraph, Table
+from .token import DotList, Paragraph, Phrase, QuoteBlock, Table
 from .token import Token
 from .token import Head
 from .token import CodeBlock
@@ -11,16 +12,12 @@ from .marker import Marker
 from .types import TokenTypes
 from pathlib import Path
 
-from sucellus import types
-
-from sucellus import codeblock
-
-from sucellus import token
 
 class Parser(object):
     read_text: str
     converted_text: list[str] = []
     pre_syntax_tree: list[Token] = []
+    syntax_tree = []
     marker: Union[Marker, Any]
     tmp_syntax: str
 
@@ -62,32 +59,48 @@ class Parser(object):
             elif self.marker.RE_DISPLAY_MATH.search(block):
                 token.type = self.types.TYPE_DISPLAY_MATH
                 _contents.append(block)
+            elif self.marker.RE_DOT_LIST.search(block):
+                token.type = self.types.TYPE_DOT_LIST
+                _contents.append(block)
             else:
                 token.type = self.types.TYPE_PARAGRAPH
                 _contents.append(block)
             token.contents = "\n\n".join(_contents)
             self.pre_syntax_tree.append(token)
-        return self.pre_syntax_tree
 
     def build_head(self, contents):
         token = Head()
         token.type = self.types.TYPE_HEAD
-        token.level = len(self.marker.RE_HEAD_LEVEL.search(contents).group())
-        token.children = [contents[token.level+1:]]
+        # "#"のベタ打ちはそのうち直す
+        # より抽象度の高いコードに変更(そのうち)
+        token.level = self.marker.RE_HEAD.match(contents).group().count("#")
+        token.contents = contents[token.level:]
         return token
     
     def build_code_block(self,contents: str):
         token = CodeBlock()
-        listed_contents = contents.split("\n")
-        token.language = listed_contents.pop(0)[3:]
-        listed_contents.pop(-1)
-        token.children = listed_contents
+        token.type = self.types.TYPE_CODE_BLOCK
+        _contents = list(filter(None,self.marker.RE_CODE_BLOCK_MARK.sub("",contents).split("\n")))
+        token.language = _contents.pop(0)
+        token.contents = "\n".join(contents)
         return token
+    
+    def build_quote_block(self,contents : str):
+        token = QuoteBlock()
+        token.type = self.types.TYPE_QUOTE_BLOCK
+        _contents = self.marker.RE_QUOTE_LINE.sub("",contents)
+        token.children = self.build_context(_contents)
+
     
     def build_paragraph(self,contents):
         paragraph = Paragraph()
         paragraph.type = self.types.TYPE_PARAGRAPH
+        paragraph.children =  self.build_context(contents)
+        return paragraph
+
+    def build_context(self,contents):
         match_iter = self.marker.RE_CONTEXT.finditer(contents)
+        syntax :list[Text] = []
         for match in match_iter:
             match_text = match.group()
             token = Text()
@@ -104,62 +117,65 @@ class Parser(object):
             elif part:=self.marker.RE_PLAINE.match(match_text):
                 token.type = self.types.TYPE_PLAINE
             token.contents = part.group(1)
-            paragraph.children.append(token)
-        return paragraph
-
-    # def prebuild_paragraph(self):
-    #     token = Token()
-    #     token.type = "paragraph"
-    #     raw_contents : list[str] = []
-    #     while not self.marker.END_PARAGRAPH.match(self.tmp_syntax):
-    #         raw_contents.append(self.tmp_syntax)
-    #         self.tmp_syntax = self.converted_text.pop(0)
-    #     else:
-    #         token.contents = "\n".join(raw_contents)
-    #     return token
+            syntax.append(token)
+        return syntax
     
-    # def build_context(self, context):
-    #     match_iter = self.marker.CONTEXT.finditer(context)
-    #     syntax_tree : list[Token] = []
-    #     for match in match_iter:
-    #         match_text = match.group()
-    #         if part:=re.match(self.marker.EMPHASIS,match_text):
-    #             token = Token()
-    #             token.type = "emphasis"
-    #             token.contents = part.group(1)
-    #             syntax_tree.append(token)
-    #         elif part:=re.match(self.marker.ITALIC,match_text):
-    #             token = Token()
-    #             token.type = "italic"
-    #             token.contents = part.group(1)
-    #             syntax_tree.append(token)
-    #         elif part:=re.match(self.marker.INLINE,match_text):
-    #             token = Token()
-    #             token.type = "inline"
-    #             token.contents = part.group(1)
-    #             syntax_tree.append(token)
-    #         elif part:=re.match(self.marker.PLAINE,match_text):
-    #             token = Token()
-    #             token.type = "plain"
-    #             token.contents = part.group(1)
-    #             syntax_tree.append(token)
-        
-    #     return syntax_tree
+    def build_table(self,contents : str):
+        table = Table()
+        contents_matrix = [list(filter(None, row.split("|"))) for row in contents.split("\n")]
+        table.type = self.types.TYPE_TABLE
+        table.header = [self.build_context(phrase) for phrase in contents_matrix.pop(0)]
+        for pos in contents_matrix.pop(0):
+            if self.marker.RE_TABLE_POSITION_LEFT.match(pos):
+                table.position.append(self.types.TABLE_POSITION_LEFT)
+            elif self.marker.RE_TABLE_POSITION_CENTER.match(pos):
+                table.position.append(self.types.TABLE_POSITION_CENTER)
+            elif self.marker.RE_TABLE_POSITION_RIGHT.match(pos):
+                table.position.append(self.types.TABLE_POSITION_RIGHT)
+        table.cells = [[self.build_context(cell) for cell in row] for row in contents_matrix]
+        return table
+    
+    def build_list(self,contents : str):
+        root = DotList() # rootのlevelは0
+        current_parent = root
+        current_level = 0
+        latest = root
+        for value in contents.split("\n"):
+            node = DotList()
+            level = 1
+            while self.marker.RE_DOT_LIST_INDENT.match(value):
+                value = self.marker.RE_DOT_LIST_INDENT.sub("",value)
+                level += 1
+            else:
+                value = self.marker.RE_DOT_LIST_MARKER.sub("",value)
+                node.type = self.types.TYPE_DOT_LIST
+                node.children = self.build_context(value)
+                if level > current_level:
+                    current_parent = latest
+                elif level == current_level:
+                    pass
+                elif level < current_level:
+                    current_parent = current_parent.parent
+                current_level = level
+                node.parent = current_parent
+                current_parent.items.append(node)
+                latest = node
+        root.children = root.items
+        return root
 
-    # def build_table(self,context : str):
-    #     rows = context.split("\n")
-    #     table = Table()
-    #     table.header = [self.build_context(head) for head in filter(None, rows.pop(0).split("|"))]
-    #     for pos in filter(None, rows.pop(0).split("|")):
-    #         if self.marker.TABLE_LEFT.match(pos):
-    #             table.position.append("left")
-    #         elif self.marker.TABLLE_CENTER.match(pos):
-    #             table.position.append("center")
-    #         elif self.marker.TABLE_RIGHT.match(pos):
-    #             table.position.append("right")
-        
-    #     for row in rows:
-    #         table.cells.append([self.build_context(cell) for cell in filter(None, row.split("|"))])
-        
-    #     return table
-    #     pass
+    def build_markdown(self):
+        self.pre_process()
+        for part in self.pre_syntax_tree:
+            _contents = part.contents
+            if part.type == self.types.TYPE_HEAD:
+                self.syntax_tree.append(self.build_head(_contents))
+            elif part.type == self.types.TYPE_PARAGRAPH:
+                self.syntax_tree.append(self.build_paragraph(_contents))
+            elif part.type == self.types.TYPE_CODE_BLOCK:
+                self.syntax_tree.append(self.build_code_block(_contents))
+            elif part.type == self.types.TYPE_QUOTE_BLOCK:
+                self.syntax_tree.append(self.build_quote_block(_contents))
+            elif part.type == self.types.TYPE_TABLE:
+                self.syntax_tree.append(self.build_table(_contents))
+            elif part.type == self.types.TYPE_DOT_LIST:
+                self.syntax_tree.append(self.build_list(_contents))
