@@ -10,7 +10,7 @@ class Marker(object):
     DOT_LIST = r"^( {4}|\t)*\* .*$"
 
     # MatchPatterns
-    NEW_LINE = r"(\n\n)"
+    NEW_LINE = r"^$"
     ITALIC = r"\*(((\\\*)|[^*])+?)\*"
     EMPHASIS = r"\*\*(((\\\*)|[^*])+?)\*\*"
     INLINE = r"`(((\\`)|[^`])+?)`"
@@ -49,7 +49,7 @@ class Marker(object):
     RE_DISPLAY_MATH = re.compile(DISPLAY_MATH)
     RE_TABLE = re.compile(TABLE)
     RE_DOT_LIST = re.compile(DOT_LIST,re.MULTILINE)
-    RE_CONTEXT = re.compile(CONTEXT)
+    RE_CONTEXT = re.compile(CONTEXT,re.MULTILINE)
 
     RE_CODE_BLOCK_MARK = re.compile(CODE_BLOCK_MARK,re.MULTILINE)
 

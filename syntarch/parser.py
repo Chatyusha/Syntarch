@@ -112,7 +112,7 @@ class Parser(object):
                 token.type = self.types.TYPE_INLINE_MATH
             elif part:=self.marker.RE_PLAINE.match(match_text):
                 token.type = self.types.TYPE_PLAINE
-            token.contents = part.group(1)
+            token.contents = part.group(0)
             syntax.append(token)
         return syntax
     
