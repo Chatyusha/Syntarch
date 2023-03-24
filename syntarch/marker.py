@@ -15,8 +15,8 @@ class Marker(object):
     EMPHASIS = r"\*\*(((\\\*)|[^*])+?)\*\*"
     INLINE = r"`(((\\`)|[^`])+?)`"
     INLINE_MATH = r"\$(((\\\$)|[^$])+?)\$"
-    PLAINE = r"(([^*$`(\n)]|(\\\*)|(\`)|(\\\$))+)"
-    CONTEXT = rf"{NEW_LINE}|{EMPHASIS}|{ITALIC}|{INLINE}|{INLINE_MATH}|{PLAINE}"
+    PLAINE = r"(([^*$`]|(\\\*)|(\`)|(\\\$))+)"
+    CONTEXT = rf"{EMPHASIS}|{ITALIC}|{INLINE}|{INLINE_MATH}|{PLAINE}"
 
     ## CodeBlock
     CODE_BLOCK_MARK = r"^```"
@@ -49,7 +49,7 @@ class Marker(object):
     RE_DISPLAY_MATH = re.compile(DISPLAY_MATH)
     RE_TABLE = re.compile(TABLE)
     RE_DOT_LIST = re.compile(DOT_LIST,re.MULTILINE)
-    RE_CONTEXT = re.compile(CONTEXT,re.MULTILINE)
+    RE_CONTEXT = re.compile(CONTEXT)
 
     RE_CODE_BLOCK_MARK = re.compile(CODE_BLOCK_MARK,re.MULTILINE)
 

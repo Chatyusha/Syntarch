@@ -69,14 +69,16 @@ class Parser(object):
         # "#"のベタ打ちはそのうち直す
         # より抽象度の高いコードに変更(そのうち)
         token.level = self.marker.RE_HEAD.match(contents).group().count("#")
-        token.contents = contents[token.level:]
+        token.contents = contents[token.level+1:]
         return token
     
     def build_code_block(self,contents: str):
         token = Token()
         token.type = self.types.TYPE_CODE_BLOCK
-        _contents = list(filter(None,self.marker.RE_CODE_BLOCK_MARK.sub("",contents).split("\n")))
+        a = self.marker.RE_CODE_BLOCK_MARK.sub("",contents).split("\n")
+        _contents = list(self.marker.RE_CODE_BLOCK_MARK.sub("",contents).split("\n"))
         token.language = _contents.pop(0)
+        del _contents[-1]
         token.contents = "\n".join(_contents)
         return token
     
@@ -101,10 +103,7 @@ class Parser(object):
             match_text = match.group()
             token = Token()
             match_number = 1
-            if part:=self.marker.RE_NEW_LINE.match(match_text):
-                token.type = self.types.TYPE_NEW_LINE
-                match_number = 0
-            elif part:=self.marker.RE_EMPHASIS.match(match_text):
+            if part:=self.marker.RE_EMPHASIS.match(match_text):
                 token.type = self.types.TYPE_EMPHASIS
             elif part:=self.marker.RE_ITALIC.match(match_text):
                 token.type = self.types.TYPE_ITALIC
@@ -154,12 +153,11 @@ class Parser(object):
         return token
     
     def build_list(self,contents : str):
-        root = Token() # rootのlevelは0
-        token = Token()
+        token = Token() # root_tokenのlevelは0
         token.type = self.types.TYPE_DOT_LIST
-        current_parent = root
+        current_parent = token
         current_level = 0
-        latest = root
+        latest = token
         for value in contents.split("\n"):
             node = Token()
             level = 1
@@ -180,7 +178,6 @@ class Parser(object):
                 node.parent = current_parent
                 current_parent.items.append(node)
                 latest = node
-        token.children = root.items
         return token
 
     def build_markdown(self):
