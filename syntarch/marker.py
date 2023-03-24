@@ -15,7 +15,7 @@ class Marker(object):
     EMPHASIS = r"\*\*(((\\\*)|[^*])+?)\*\*"
     INLINE = r"`(((\\`)|[^`])+?)`"
     INLINE_MATH = r"\$(((\\\$)|[^$])+?)\$"
-    PLAINE = r"(([^*$`]|(\\\*)|(\`)|(\\\$))+)"
+    PLAINE = r"(([^*$`]|(\\\*)|(\\`)|(\\\$))+)"
     CONTEXT = rf"{EMPHASIS}|{ITALIC}|{INLINE}|{INLINE_MATH}|{PLAINE}"
 
     ## CodeBlock
