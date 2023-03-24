@@ -100,8 +100,10 @@ class Parser(object):
         for match in match_iter:
             match_text = match.group()
             token = Token()
+            match_number = 1
             if part:=self.marker.RE_NEW_LINE.match(match_text):
                 token.type = self.types.TYPE_NEW_LINE
+                match_number = 0
             elif part:=self.marker.RE_EMPHASIS.match(match_text):
                 token.type = self.types.TYPE_EMPHASIS
             elif part:=self.marker.RE_ITALIC.match(match_text):
@@ -112,7 +114,7 @@ class Parser(object):
                 token.type = self.types.TYPE_INLINE_MATH
             elif part:=self.marker.RE_PLAINE.match(match_text):
                 token.type = self.types.TYPE_PLAINE
-            token.contents = part.group(0)
+            token.contents = part.group(match_number)
             syntax.append(token)
         return syntax
     
