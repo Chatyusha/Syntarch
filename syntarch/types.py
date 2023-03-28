@@ -1,6 +1,6 @@
 class TokenTypes():
     TYPE_HEAD = "head"
-    TYPE_CODE_BLOCK = "codeb_lock"
+    TYPE_CODE_BLOCK = "code_block"
     TYPE_QUOTE_BLOCK = "quote_block"
     TYPE_TABLE = "table"
     TYPE_PARAGRAPH = "paragraph"
