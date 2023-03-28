@@ -43,8 +43,8 @@ class Marker(object):
     DOT_LIST_MARKER = r"^\* "
 
     RE_HEAD = re.compile(HEAD)
-    RE_START_CODE_BLOCK = re.compile(START_CODE_BLOCK)
-    RE_END_CODE_BLOCK = re.compile(END_CODE_BLOCK)
+    RE_START_CODE_BLOCK = re.compile(START_CODE_BLOCK,re.MULTILINE)
+    RE_END_CODE_BLOCK = re.compile(END_CODE_BLOCK,re.MULTILINE)
     RE_QUOTE_BLOCK = re.compile(QUOTE_BLOCK)
     RE_DISPLAY_MATH = re.compile(DISPLAY_MATH)
     RE_TABLE = re.compile(TABLE)
