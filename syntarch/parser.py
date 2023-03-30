@@ -27,7 +27,7 @@ class Parser(object):
             self.values = TokenValues()
     
     def read_file(self,file_path: str):
-        self.read_text = Path(file_path).read_text()
+        self.read_text = Path(file_path).read_text(encoding="utf-8")
         self.converted_text = self.read_text.split("\n\n")
         
     def pre_process(self):
