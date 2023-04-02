@@ -62,3 +62,4 @@ hogehoge
 ##### 数学
 
 $\frac{a}{b}$
+$_{n}C_{r}$
