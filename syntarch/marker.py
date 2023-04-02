@@ -1,5 +1,4 @@
 import re
-from tkinter.font import ITALIC
 class Marker(object):
     # Markers
     START_CODE_BLOCK = r"^```[^`]+$"
