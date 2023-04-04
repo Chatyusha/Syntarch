@@ -1,8 +1,5 @@
-syntach/__pycache__/
-.env/
-.menv/
-test/
 .vscode/
+.env/
+tests/
 build/
-ast.json
 syntarch.egg-info/

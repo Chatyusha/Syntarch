@@ -1,9 +1,9 @@
 from typing import Union
 from typing import Any
 
-from .token import Token
-from .marker import Marker
-from .types import TokenTypes, TokenValues
+from .utils.token import Token
+from .utils.marker import Marker
+from .utils.types import TokenTypes, TokenValues
 from pathlib import Path
 
 
@@ -28,40 +28,40 @@ class Parser(object):
     
     def read_file(self,file_path: str):
         self.read_text = Path(file_path).read_text()
-        self.converted_text = self.read_text.split("\n\n")
+        self.converted_text = self.read_text.split(Marker.CATEOGRY_SEPARATE)
         
-    def pre_process(self):
-        while self.converted_text:
-            block = self.converted_text.pop(0)
-            _contents : list[str] = [] 
-            token = Token()
-            if self.marker.RE_HEAD.search(block):
-                token.type = self.types.TYPE_HEAD
-                _contents.append(block)
-            elif self.marker.RE_START_CODE_BLOCK.search(block):
-                token.type = self.types.TYPE_CODE_BLOCK
-                while not self.marker.RE_END_CODE_BLOCK.search(block):
-                    _contents.append(block)
-                    block = self.converted_text.pop(0)
-                else:
-                    _contents.append(block)
-            elif self.marker.RE_QUOTE_BLOCK.search(block):
-                token.type = self.types.TYPE_QUOTE_BLOCK
-                _contents.append(block)
-            elif self.marker.RE_TABLE.search(block):
-                token.type = self.types.TYPE_TABLE
-                _contents.append(block)
-            elif self.marker.RE_DISPLAY_MATH.search(block):
-                token.type = self.types.TYPE_DISPLAY_MATH
-                _contents.append(block)
-            elif self.marker.RE_DOT_LIST.search(block):
-                token.type = self.types.TYPE_DOT_LIST
-                _contents.append(block)
-            else:
-                token.type = self.types.TYPE_PARAGRAPH
-                _contents.append(block)
-            token.contents = "\n\n".join(_contents)
-            self.pre_syntax_tree.append(token)
+    # def pre_process(self):
+    #     while self.converted_text:
+    #         block = self.converted_text.pop(0)
+    #         _contents : list[str] = [] 
+    #         token = Token()
+    #         if self.marker.RE_HEAD.search(block):
+    #             token.type = self.types.TYPE_HEAD
+    #             _contents.append(block)
+    #         elif self.marker.RE_START_CODE_BLOCK.search(block):
+    #             token.type = self.types.TYPE_CODE_BLOCK
+    #             while not self.marker.RE_END_CODE_BLOCK.search(block):
+    #                 _contents.append(block)
+    #                 block = self.converted_text.pop(0)
+    #             else:
+    #                 _contents.append(block)
+    #         elif self.marker.RE_QUOTE_BLOCK.search(block):
+    #             token.type = self.types.TYPE_QUOTE_BLOCK
+    #             _contents.append(block)
+    #         elif self.marker.RE_TABLE.search(block):
+    #             token.type = self.types.TYPE_TABLE
+    #             _contents.append(block)
+    #         elif self.marker.RE_DISPLAY_MATH.search(block):
+    #             token.type = self.types.TYPE_DISPLAY_MATH
+    #             _contents.append(block)
+    #         elif self.marker.RE_DOT_LIST.search(block):
+    #             token.type = self.types.TYPE_DOT_LIST
+    #             _contents.append(block)
+    #         else:
+    #             token.type = self.types.TYPE_PARAGRAPH
+    #             _contents.append(block)
+    #         token.contents = "\n\n".join(_contents)
+    #         self.pre_syntax_tree.append(token)
 
     def build_head(self, contents):
         token = Token()

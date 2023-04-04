@@ -1,7 +1,5 @@
 
 from typing import Any
-from .types import TokenTypes
-
 
 class Token():
     def toJSON(self):
@@ -17,16 +15,7 @@ class Token():
             if token_object[key] == None or token_object[key] == []:
                 token_object.pop(key)
         return token_object
-        # if self.children:
-        #     return {
-        #         "type" : self.type,
-        #         "children":[i.toJSON() for i in self.children]
-        #         }
-        # else:
-        #     if self.type == TokenTypes.TYPE_HEAD:
-        #         return {"type" : self.type, "level" : self.level, "contents" : self.contents}
-        #     else:
-        #         return {"type" : self.type, "contents" : self.contents}
+
     def __init__(self):
         self.type: str = None
         self.contents : str = None
@@ -34,3 +23,5 @@ class Token():
         self.language: str = None
         self.children : list[Token] = []
         self.items : list[Token] = []
+        self.table_position : list[str] = []
+        self.table_head : list[Token] = []
