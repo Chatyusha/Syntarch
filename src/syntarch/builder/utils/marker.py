@@ -2,7 +2,7 @@ class Marker(object):
     CATEGORIES :dict = None
 
     # Category Separator
-    CATEOGRY_SEPARATOR = r"\n"
+    CATEOGRY_SEPARATOR = "\n"
 
     ## Category
     CODE_BLOCK = r"^```"
@@ -14,7 +14,7 @@ class Marker(object):
 
 
     # Paragraph
-    NEW_LINE = r"^$"
+    EMPTY_LINE = r"^$"
     ITALIC = r"\*(((\\\*)|[^*])+?)\*"
     EMPHASIS = r"\*\*(((\\\*)|[^*])+?)\*\*"
     INLINE = r"`(((\\`)|[^`])+?)`"

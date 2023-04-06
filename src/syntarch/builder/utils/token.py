@@ -1,6 +1,3 @@
-
-from typing import Any
-
 class Token():
     def toJSON(self):
         token_object = {

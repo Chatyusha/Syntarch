@@ -13,9 +13,9 @@ class Matcher(object):
 
     def __init__(self,_marker : marker.Marker):
         self._marker = _marker
-        self.RE_HEAD = re.compile(_marker.HEAD)
-        self.RE_QUOTE = re.compile(_marker.QUOTE)
-        self.RE_DOTLIST = re.compile(_marker.DOT_LIST)
-        self.RE_TABLE = re.compile(_marker.TABLE)
-        self.RE_CODE_BLOCK = re.compile(_marker.CODE_BLOCK)
-        self.RE_DISPLAY_MATH = re.compile(_marker.DISPLAY_MATH)
+        self.RE_HEAD = re.compile(_marker.HEAD,re.MULTILINE)
+        self.RE_QUOTE = re.compile(_marker.QUOTE,re.MULTILINE)
+        self.RE_DOTLIST = re.compile(_marker.DOT_LIST,re.MULTILINE)
+        self.RE_TABLE = re.compile(_marker.TABLE,re.MULTILINE)
+        self.RE_CODE_BLOCK = re.compile(_marker.CODE_BLOCK,re.MULTILINE)
+        self.RE_DISPLAY_MATH = re.compile(_marker.DISPLAY_MATH,re.MULTILINE)

@@ -1,7 +1,7 @@
 class TokenTypes():
     TYPE_HEAD = "head"
     TYPE_CODE_BLOCK = "code_block"
-    TYPE_QUOTE_BLOCK = "quote_block"
+    TYPE_QUOTE = "quote"
     TYPE_TABLE = "table"
     TYPE_PARAGRAPH = "paragraph"
     TYPE_DISPLAY_MATH = "display_math"
@@ -21,6 +21,9 @@ class TokenTypes():
     TABLE_POSITION_LEFT = "table_left"
     TABLE_POSITION_CENTER = "table_center"
     TABLE_POSITION_RIGHT = "table_right"
+
+    def __init__(self):
+        pass
 
 class TokenValues():
     CONST_TABLE_POSITION_LEFT = "left"
